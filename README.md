@@ -7,7 +7,7 @@
 -  File Upload
 -  Getshell
 -  Default Webshell For Chopper
-Note: Default Webshell's Password is s2045@exp
+-  Note: Default Webshell's Password is s2045@exp
 
 ---
 Mail: flyteas@gmail.com
