@@ -1,7 +1,7 @@
 
 Struts2 S2-045 (CVE-2017-5638) Exp Tools
 
-Exp Function: 
+Exp Function:
 1. Command Execute
 2. Get Target Website's Physical Path
 3. File Upload
