@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Struts2-045-Exp.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -36,6 +33,15 @@
     <ClInclude Include="Exp.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CommandDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="UploadFileDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GetshellDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Struts2-045-Exp.cpp">
@@ -50,6 +56,15 @@
     <ClCompile Include="Exp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CommandDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="UploadFileDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GetshellDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Struts2-045-Exp.rc">
@@ -60,6 +75,7 @@
     <None Include="res\Struts2045Exp.rc2">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="res\default.jsp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Struts2-045-Exp.ico">

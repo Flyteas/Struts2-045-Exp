@@ -54,6 +54,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -98,10 +99,10 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="CommandDlg.h" />
     <ClInclude Include="Exp.h" />
+    <ClInclude Include="GetshellDlg.h" />
+    <ClInclude Include="UploadFileDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Struts2-045-Exp.h" />
@@ -109,7 +110,10 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CommandDlg.cpp" />
     <ClCompile Include="Exp.cpp" />
+    <ClCompile Include="GetshellDlg.cpp" />
+    <ClCompile Include="UploadFileDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -121,10 +125,18 @@
     <ResourceCompile Include="Struts2-045-Exp.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\default.jsp" />
     <None Include="res\Struts2045Exp.rc2" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Struts2-045-Exp.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

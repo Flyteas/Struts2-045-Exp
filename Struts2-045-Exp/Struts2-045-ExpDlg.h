@@ -3,7 +3,9 @@
 //
 
 #pragma once
-
+#include "CommandDlg.h"
+#include "UploadFileDlg.h"
+#include "GetshellDlg.h"
 
 // CStruts2045ExpDlg 对话框
 class CStruts2045ExpDlg : public CDialogEx
@@ -30,9 +32,12 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 private:
-	CString editTextURL;
-	CString editTextCommand;
-	CString editTextResult;
+	CTabCtrl funcTab;
+	CommandDlg commandDlg; //命令执行对话框
+	UploadFileDlg uploadFileDlg; //上传文件对话框
+	GetshellDlg getshellDlg; //GETSHELL对话框
+	int currTab; //当前TAB页
+	CDialogEx* tabDlgs[3];//TAB所有对话框
 public:
-	afx_msg void OnExecuteBtnClicked();
+	afx_msg void OnTcnSelchangeTab2(NMHDR *pNMHDR, LRESULT *pResult);
 };

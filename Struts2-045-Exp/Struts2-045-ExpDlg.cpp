@@ -57,16 +57,14 @@ CStruts2045ExpDlg::CStruts2045ExpDlg(CWnd* pParent /*=NULL*/)
 void CStruts2045ExpDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT1, editTextURL);
-	DDX_Text(pDX, IDC_EDIT2, editTextCommand);
-	DDX_Text(pDX, IDC_EDIT3, editTextResult);
+	DDX_Control(pDX, IDC_TAB2, funcTab);
 }
 
 BEGIN_MESSAGE_MAP(CStruts2045ExpDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON1, &CStruts2045ExpDlg::OnExecuteBtnClicked)
+	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB2, &CStruts2045ExpDlg::OnTcnSelchangeTab2)
 END_MESSAGE_MAP()
 
 
@@ -102,8 +100,35 @@ BOOL CStruts2045ExpDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
-	editTextCommand = "whoami"; //默认命令
-	UpdateData(false);
+	//为Tab Control增加两个页面
+	funcTab.InsertItem(0, "命令执行");
+	funcTab.InsertItem(1, "文件上传");
+	funcTab.InsertItem(2, "Getshell");
+	commandDlg.Create(IDD_COMMAND_DIALOG, &funcTab); //创建命令执行对话框
+	uploadFileDlg.Create(IDD_UPLOADFILE_DIALOG,&funcTab); //创建上传文件对话框
+	getshellDlg.Create(IDD_GETSHELL_DIALOG,&funcTab); //创建GETSHELL对话框
+	//设定在Tab内显示的范围
+	CRect displayRange;
+	commandDlg.GetClientRect(displayRange);
+	displayRange.top += 20;
+	displayRange.bottom -= 0;
+	displayRange.left += 0;
+	displayRange.right -= 0;
+	commandDlg.MoveWindow(&displayRange);
+	getshellDlg.MoveWindow(&displayRange);
+	uploadFileDlg.MoveWindow(&displayRange);
+ 
+	//把对话框对象指针保存起来
+	tabDlgs[0] = &commandDlg;
+	tabDlgs[1] = &uploadFileDlg;
+	tabDlgs[2] = &getshellDlg;
+	//显示初始页面
+	tabDlgs[0]->ShowWindow(SW_SHOW);
+	tabDlgs[1]->ShowWindow(SW_HIDE);
+	tabDlgs[2]->ShowWindow(SW_HIDE);
+	//保存当前选择
+	currTab = 0;
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -156,25 +181,10 @@ HCURSOR CStruts2045ExpDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
-
-
-void CStruts2045ExpDlg::OnExecuteBtnClicked() //执行 按钮 点击事件
+void CStruts2045ExpDlg::OnTcnSelchangeTab2(NMHDR *pNMHDR, LRESULT *pResult) //TAB选择改变事件
 {
-	UpdateData(true); //同步输入框变量值
-	if(editTextURL.IsEmpty()) //如果URL输入框为空
-	{
-		MessageBox("请输入URL","错误");
-		return;
-	}
-	if(editTextCommand.IsEmpty()) //如果命令输入框为空
-	{
-		MessageBox("请输入执行命令","错误");
-		return;
-	}
-	Exp exp;
-	CString expResult = exp.executeCommand(editTextURL,editTextCommand);
-	editTextResult = expResult;
-	editTextResult.Replace("\n","\r\n"); //换行符 替换，否则CEDIT控件不能换行显示
-	UpdateData(false); //同步输入框变量值
+    tabDlgs[currTab]->ShowWindow(SW_HIDE); //隐藏当前页面
+    currTab = funcTab.GetCurSel();  //得到新的页面索引
+    tabDlgs[currTab]->ShowWindow(SW_SHOW); //显示新页面
+	*pResult = 0;
 }
