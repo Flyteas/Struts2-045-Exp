@@ -7,6 +7,8 @@
 -  File Upload
 -  Getshell
 -  Default Webshell For Chopper
+-  Support HTTP/HTTPS
+-  Support URL With Any Port
 -  Note: Default Webshell's Password is s2045@exp
 
 ---

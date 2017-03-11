@@ -1,10 +1,11 @@
 #include "stdafx.h"
-#include "Exp.h"
 #include <winsock2.h>
-#include<atlbase.h>
-#include<atlconv.h>
+#include <atlbase.h>
+#include <atlconv.h>
 #include <stdio.h>
 #include <afxinet.h>
+#include <regex>
+#include "Exp.h"
 
 Exp::Exp(void)
 {
@@ -58,7 +59,12 @@ CString Exp::executeCommand(CString url,CString command)
 	{
 		CString statusCodeStr;
 		statusCodeStr.Format("%d", statusCode); 
-		exeResult = "执行失败，HTTP状态码为 " + statusCodeStr;
+		if(statusCode == -1) //URL错误
+			exeResult = "输入的URL不正确!\n请输入正确的URL";
+		else if(statusCode == 0) //HTTP请求出错
+			exeResult = "HTTP请求出错!\n请检查与服务器网络是否联通";
+		else
+			exeResult = "执行失败，HTTP状态码为 " + statusCodeStr;
 	}
 	return exeResult;
 }
@@ -78,8 +84,13 @@ CString Exp::getRootPath(CString url,DWORD& statusCode)
 	if(statusCode != 200) //状态码不是200
 	{
 		CString statusCodeStr;
-		statusCodeStr.Format("%d", statusCode); 
-		pathResult = "获取网站根目录失败，HTTP状态码为 " + statusCodeStr;
+		statusCodeStr.Format("%d", statusCode);
+		if(statusCode == -1) //URL错误
+			pathResult = "输入的URL不正确!\n请输入正确的URL";
+		else if(statusCode == 0) //HTTP请求出错
+			pathResult = "HTTP请求出错!\n请检查与服务器网络是否联通";
+		else
+			pathResult = "获取网站根目录失败，HTTP状态码为 " + statusCodeStr;
 	}
 	return pathResult;
 }
@@ -110,7 +121,12 @@ CString Exp::writeFile(CString url,CString filePath,CString writeData)
 	{
 		CString statusCodeStr;
 		statusCodeStr.Format("%d", statusCode); 
-		writeResult = "写入文件失败，HTTP状态码为 " + statusCodeStr;
+		if(statusCode == -1) //URL错误
+			writeResult = "输入的URL不正确!\n请输入正确的URL";
+		else if(statusCode == 0) //HTTP请求出错
+			writeResult = "HTTP请求出错!\n请检查与服务器网络是否联通";
+		else
+			writeResult = "写入文件失败，HTTP状态码为 " + statusCodeStr;
 		return writeResult;
 	}
 	/* 通过JSP写文件助手上传文件到服务器 */
@@ -136,8 +152,13 @@ CString Exp::writeFile(CString url,CString filePath,CString writeData)
 	if(writeResult.Mid(0,4) != "0x00") //并且返回页面前4个字符不是 0x00 则说明JSP助手写文件失败
 	{
 		CString statusCodeStr;
-		statusCodeStr.Format("%d", statusCode); 
-		writeResult = "写入文件失败，HTTP状态码为 " + statusCodeStr;
+		statusCodeStr.Format("%d", statusCode);
+		if(statusCode == -1) //URL错误
+			writeResult = "输入的URL不正确!\n请输入正确的URL";
+		else if(statusCode == 0) //HTTP请求出错
+			writeResult = "HTTP请求出错!\n请检查与服务器网络是否联通";
+		else
+			writeResult = "写入文件失败，HTTP状态码为 " + statusCodeStr;
 		return writeResult;
 	}
 	writeResult = "写入文件成功!\n路径: " + filePath;
@@ -150,7 +171,7 @@ CString Exp::getShell(CString url,CString shellName,CString shellData)
 	if(getshellResult.Find("成功") != -1) //GETSHELL成功
 		getshellResult = "Getshell 成功!\n请访问应用根目录下的Webshell: " + shellName;
 	else //失败
-		getshellResult = "Getshell 失败!";
+		getshellResult = "Getshell 失败!\n" + getshellResult;
 	return getshellResult;
 }
 
@@ -196,32 +217,40 @@ CString Exp::urlEncodeCore(CString strData, int srcCodepage, int dstCodepage) //
 //POST请求，返回请求页面结果,statusCode为返回的HTTP状态码 timeout为超时时间 retryTime重试次数 retryDelay重试间隔时间
 CString Exp::httpPost(CString url,CString header,CString postData,DWORD& statusCode,DWORD timeout,DWORD retryTime,DWORD retryDelay)
 {
-	CString urlHost = ""; //主机
-	CString urlPath = ""; //路径
+	int urlType; //http类型 0 http 1 https
+	CString urlHost; //主机
+	INTERNET_PORT urlPort; //端口号
+	CString urlPath; //路径
 	CString resultPage = ""; //返回页面
 
 	/* URL解析 */
-	CString urlPrefix = "http://"; //URL前缀
-	CString urlSeparator = "/"; //URL分隔符
-	int urlPrefixPos = url.Find(urlPrefix); //查找第一个前缀位置
-	if(urlPrefixPos >= 0) //存在前缀
-		url = url.Mid(urlPrefixPos+urlPrefix.GetLength()); //去除前缀
-	int urlSeparatorPos = url.Find(urlSeparator); //查找第一个分隔符位置
-	if(urlSeparatorPos >= 0) //存在分隔符
+	if(!urlParse(url,urlType,urlHost,urlPort,urlPath)) //URL不正确
 	{
-		urlHost = url.Mid(0,urlSeparatorPos); //取主机名
-		urlPath = url.Mid(urlSeparatorPos); //取路径 包括分隔符
+		statusCode = -1;
+		return resultPage;
 	}
-	else //不存在分隔符
-		urlHost = url; //取主机名
 	try
 	{
 		CInternetSession httpSession;
 		httpSession.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT,timeout); //超时时间
 		httpSession.SetOption(INTERNET_OPTION_CONNECT_BACKOFF,retryDelay);		// 重试间隔时间	
 		httpSession.SetOption(INTERNET_OPTION_CONNECT_RETRIES,retryTime);	//重试次数
-		CHttpConnection* HttpConnection = httpSession.GetHttpConnection(urlHost);
-		CHttpFile* httpFile = HttpConnection->OpenRequest(CHttpConnection::HTTP_VERB_POST,urlPath,NULL,1,NULL,"HTTP/1.1",INTERNET_FLAG_RELOAD|INTERNET_FLAG_EXISTING_CONNECT|INTERNET_FLAG_NO_CACHE_WRITE);
+		DWORD httpFlags;
+		CHttpConnection* httpConnection;
+		CHttpFile* httpFile;
+		if(urlType == 1) //https类型的URL
+		{
+			httpConnection = httpSession.GetHttpConnection(urlHost,INTERNET_FLAG_SECURE,443); //设置为HTTPS
+			httpFile = httpConnection->OpenRequest(CHttpConnection::HTTP_VERB_POST,urlPath,NULL,1,NULL,"HTTP/1.1",INTERNET_FLAG_RELOAD|INTERNET_FLAG_SECURE|INTERNET_FLAG_IGNORE_CERT_CN_INVALID|INTERNET_FLAG_IGNORE_CERT_DATE_INVALID|INTERNET_FLAG_EXISTING_CONNECT|INTERNET_FLAG_NO_CACHE_WRITE);
+			httpFile->QueryOption(INTERNET_OPTION_SECURITY_FLAGS, httpFlags);
+			httpFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA|SECURITY_FLAG_IGNORE_REVOCATION;  //设置忽略证书错误
+			httpFile->SetOption(INTERNET_OPTION_SECURITY_FLAGS, httpFlags);
+		}
+		else //http类型的URL
+		{
+			httpConnection = httpSession.GetHttpConnection(urlHost,urlPort);
+			httpFile = httpConnection->OpenRequest(CHttpConnection::HTTP_VERB_POST,urlPath,NULL,1,NULL,"HTTP/1.1",INTERNET_FLAG_RELOAD|INTERNET_FLAG_EXISTING_CONNECT|INTERNET_FLAG_NO_CACHE_WRITE);
+		}
 		httpFile->SendRequest(header,header.GetLength(),(LPVOID)((LPCTSTR)postData),postData.GetLength());
 		httpFile->QueryInfoStatusCode(statusCode);
 		if(statusCode != 200)
@@ -241,4 +270,69 @@ CString Exp::httpPost(CString url,CString header,CString postData,DWORD& statusC
 		statusCode = 0;
 	}
 	return resultPage;
+}
+
+/* URL解析 匹配正则表达式为 ((http|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)? */
+bool Exp::urlParse(CString url,int&httpType,CString& host,unsigned short int& port,CString& path)
+{
+	CString httpPrefix = "http://";
+	CString httpsPrefix = "https://";
+	CString httpRegEx = "((http|https)://)(([a-zA-Z0-9\\._-]+\\.[a-zA-Z]{2,6})|([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\\&%_\\./-~-]*)?"; //URL匹配正则表达式
+	url.Replace("\\","/"); //反斜杠换成斜杠
+	if(url.Mid(0,httpPrefix.GetLength()) != httpPrefix && url.Mid(0,httpsPrefix.GetLength()) != httpsPrefix) //输入的URL没有前缀
+		url = "http://" + url; //添加前缀
+	else //统一将前缀换成小写
+		url = url.Mid(0,5).MakeLower() + url.Mid(5);
+	std::string urlRegExStr(httpRegEx.GetBuffer());
+	std::string urlStr(url.GetBuffer());
+	std::regex regexPat(urlRegExStr);
+	if(!std::regex_match(urlStr,regexPat)) //正则匹配失败
+		return false;
+	if(url.Mid(0,httpPrefix.GetLength()) == httpPrefix) //http类型
+	{
+		httpType = 0;
+		url = url.Mid(httpPrefix.GetLength()); //去除前缀
+	}
+	else if(url.Mid(0,httpsPrefix.GetLength()) == httpsPrefix) //https类型
+	{
+		httpType = 1;
+		url = url.Mid(httpsPrefix.GetLength()); //去除前缀
+	}
+	else
+		return false;
+	CString urlSeparator = "/"; //URL分隔符
+	CString urlPortSeparator = ":"; //端口号分隔符号
+	int urlSeparatorPos = url.Find(urlSeparator); //第一个分隔符位置
+	int urlPortSeparatorPos = url.Find(urlPortSeparator); //第一个端口号分隔符位置
+	if(urlSeparatorPos == -1 && urlPortSeparatorPos == -1) //均不存在
+	{
+		host = url;
+		port = 80;
+		path = "";
+	}
+	else if(urlPortSeparatorPos != -1 &&  urlSeparatorPos == -1) //存在端口号不存在分隔符
+	{
+		host = url.Mid(0,urlPortSeparatorPos);
+		port = atoi(url.Mid(urlPortSeparatorPos+1));
+		path = "";
+	}
+	else if(urlPortSeparatorPos == -1 &&  urlSeparatorPos != -1) //存在分隔符不存在端口号
+	{
+		host = url.Mid(0,urlSeparatorPos);
+		port = 80;
+		path = url.Mid(urlSeparatorPos); //路径包含第一个分隔符
+	}
+	else //均存在
+	{
+		if(urlPortSeparatorPos >= urlSeparatorPos) //URL错误
+			return false;
+		host = url.Mid(0,urlPortSeparatorPos);
+		int portLen = urlSeparatorPos-urlPortSeparatorPos-1;
+		if(portLen > 0)
+			port = atoi(url.Mid(urlPortSeparatorPos+1,portLen));
+		else
+			port = 80;
+		path = url.Mid(urlSeparatorPos); //路径包含第一个分隔符
+	}
+	return true;
 }
