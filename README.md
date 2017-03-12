@@ -12,4 +12,8 @@
 -  Note: Default Webshell's Password is s2045@exp
 
 ---
+#Notice
+-  The Project Is Intended For Educational/Research Purposes
+
+---
 Mail: flyteas@gmail.com
