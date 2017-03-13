@@ -272,12 +272,12 @@ CString Exp::httpPost(CString url,CString header,CString postData,DWORD& statusC
 	return resultPage;
 }
 
-/* URL解析 匹配正则表达式为 ((http|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-!]*)? */
+/* URL解析 匹配正则表达式为 ((http|https)://)(localhost|([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-!]*)? */
 bool Exp::urlParse(CString url,int&httpType,CString& host,unsigned short int& port,CString& path)
 {
 	CString httpPrefix = "http://";
 	CString httpsPrefix = "https://";
-	CString httpRegEx = "((http|https)://)(([a-zA-Z0-9\\._-]+\\.[a-zA-Z]{2,6})|([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\\&%_\\./-~-!]*)?"; //URL匹配正则表达式
+	CString httpRegEx = "((http|https)://)(localhost|([a-zA-Z0-9\\._-]+\\.[a-zA-Z]{2,6})|([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\\&%_\\./-~-!]*)?"; //URL匹配正则表达式
 	url.Replace("\\","/"); //反斜杠换成斜杠
 	if(url.Mid(0,httpPrefix.GetLength()) != httpPrefix && url.Mid(0,httpsPrefix.GetLength()) != httpsPrefix) //输入的URL没有前缀
 		url = "http://" + url; //添加前缀
